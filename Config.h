@@ -38,6 +38,8 @@
 // #define SKYBRIDGE_HS
 // 9) LoneStar USB Stick ADF7071
 // #define LONESTAR_USB
+// 10) DVMega EuroNode Hotspot/board
+// #define MMDVM_HS_HAT_DVM_EuroNode
 
 // Enable ADF7021 support:
 #define ENABLE_ADF7021

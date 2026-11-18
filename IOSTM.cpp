@@ -195,7 +195,7 @@
 #define PIN_COS_LED          GPIO_Pin_15
 #define PORT_COS_LED         GPIOB
 
-#elif defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS)
+#elif defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS) || defined(MMDVM_HS_HAT_DVM_EuroNode)
 
 #define PIN_SCLK             GPIO_Pin_5
 #define PORT_SCLK            GPIOB
@@ -275,7 +275,7 @@
 #define PORT_COS_LED         GPIOB
 
 #else
-#error "Either PI_HAT_7021_REV_02, ZUMSPOT_ADF7021, LONESTAR_USB, LIBRE_KIT_ADF7021, MMDVM_HS_HAT_REV12, MMDVM_HS_DUAL_HAT_REV10, NANO_HOTSPOT, NANO_DV_REV11, D2RG_MMDVM_HS or SKYBRIDGE_HS need to be defined"
+#error "Either PI_HAT_7021_REV_02, ZUMSPOT_ADF7021, LONESTAR_USB, LIBRE_KIT_ADF7021, MMDVM_HS_HAT_REV12, MMDVM_HS_DUAL_HAT_REV10, NANO_HOTSPOT, NANO_DV_REV11, D2RG_MMDVM_HS, MMDVM_HS_HAT_DVM_EuroNode  or SKYBRIDGE_HS need to be defined"
 #endif
 
 extern "C" {
@@ -297,7 +297,7 @@ extern "C" {
   }
 #endif
 
-#elif defined(ZUMSPOT_ADF7021) || defined(LONESTAR_USB) || defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS) || defined(SKYBRIDGE_HS)
+#elif defined(ZUMSPOT_ADF7021) || defined(LONESTAR_USB) || defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS) || defined(SKYBRIDGE_HS) || defined(MMDVM_HS_HAT_DVM_EuroNode)
 
 #if defined(BIDIR_DATA_PIN)
   void EXTI3_IRQHandler(void) {
@@ -348,7 +348,7 @@ void CIO::Init()
 
 #if defined(PI_HAT_7021_REV_02)
   GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);
-#elif defined(ZUMSPOT_ADF7021) || defined(LONESTAR_USB) || defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS) || defined(SKYBRIDGE_HS)
+#elif defined(ZUMSPOT_ADF7021) || defined(LONESTAR_USB) || defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS) || defined(SKYBRIDGE_HS) || defined(MMDVM_HS_HAT_DVM_EuroNode)
   GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
 #endif
 
@@ -549,7 +549,7 @@ void CIO::Init()
   EXTI_InitStructure.EXTI_Line = EXTI_Line14;
 #endif
 
-#elif defined(ZUMSPOT_ADF7021) || defined(LONESTAR_USB) || defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS) || defined(SKYBRIDGE_HS)
+#elif defined(ZUMSPOT_ADF7021) || defined(LONESTAR_USB) || defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS) || defined(SKYBRIDGE_HS) || defined(MMDVM_HS_HAT_DVM_EuroNode)
 
 #if defined(BIDIR_DATA_PIN)
   // Connect EXTI3 Line
@@ -601,7 +601,7 @@ void CIO::startInt()
 
   NVIC_InitStructure.NVIC_IRQChannel = EXTI15_10_IRQn;
 
-#elif defined(ZUMSPOT_ADF7021) || defined(LONESTAR_USB) || defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS) || defined(SKYBRIDGE_HS)
+#elif defined(ZUMSPOT_ADF7021) || defined(LONESTAR_USB) || defined(LIBRE_KIT_ADF7021) || defined(MMDVM_HS_HAT_REV12) || defined(MMDVM_HS_DUAL_HAT_REV10) || defined(NANO_HOTSPOT) || defined(NANO_DV_REV11) || defined(D2RG_MMDVM_HS) || defined(SKYBRIDGE_HS) || defined(MMDVM_HS_HAT_DVM_EuroNode)
 
 #if defined(BIDIR_DATA_PIN)
   // Enable and set EXTI3 Interrupt

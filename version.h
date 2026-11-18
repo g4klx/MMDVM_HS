@@ -46,6 +46,8 @@
 #define BOARD_INFO      "SkyBridge"
 #elif defined(LONESTAR_USB)
 #define BOARD_INFO      "LS_USB_STICK"
+#elif defined(MMDVM_HS_HAT_DVM_EuroNode)
+#define BOARD_INFO      "EuroNode"
 #else
 #define BOARD_INFO      "MMDVM_HS"
 #endif
