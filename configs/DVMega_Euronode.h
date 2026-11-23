@@ -94,6 +94,11 @@
 // #define DISCREET_SRV_LED
 // #define DISCREET_SRV_LED_INVERTED
 
+// The Service LED lights when its pin is low (the EuroNode's is wired so).
+// How it works is the owner's choice (MMDVM_SET_LIGHTS); this only says
+// which pin level lights it.
+#define SRV_LED_INVERTED
+
 // Use the YSF and P25 LEDs for NXDN
 // #define USE_ALTERNATE_NXDN_LEDS
 

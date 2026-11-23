@@ -37,10 +37,32 @@ m_scanEnable(false),
 m_scanPauseCnt(0U),
 m_scanPos(0U),
 m_ledValue(true),
+m_lightsOff(false),
+m_srvStyle(SRV_BLINK),
+m_srvInverted(false),
+m_srvBuiltInverted(false),
+m_quietScan(false),
+m_callLights(true),
+m_rxtxLights(true),
+m_shown(STATE_IDLE),
+m_shownScan(false),
+m_rxOn(false),
+m_txOn(false),
 m_watchdog(0U),
 m_int1counter(0U),
 m_int2counter(0U)
 {
+  // The lights as this board's build sets them, until the host says.
+  m_srvStyle    = lightsBuilt(1U);
+  m_quietScan   = lightsBuilt(2U) == 1U;
+  m_pair[0U]    = lightsBuilt(5U);
+  m_pair[1U]    = lightsBuilt(6U);
+  m_pair[2U]    = lightsBuilt(7U);
+#if defined(SRV_LED_INVERTED) || defined(CONSTANT_SRV_LED_INVERTED) || defined(DISCREET_SRV_LED_INVERTED)
+  m_srvBuiltInverted = true;
+#endif
+  m_srvInverted = m_srvBuiltInverted;
+
   Init();
 
   CE_pin(HIGH);
@@ -121,29 +143,7 @@ void CIO::process()
       m_watchdog = 0U;
     }
 
-#if defined(CONSTANT_SRV_LED)
-    LED_pin(HIGH);
-#elif defined(CONSTANT_SRV_LED_INVERTED)
-    LED_pin(LOW);
-#elif defined(DISCREET_SRV_LED)
-    if (m_ledCount == 10000U) LED_pin(LOW);
-    if (m_ledCount >= 480000U) {
-      m_ledCount = 0U;
-      LED_pin(HIGH);
-    };
-#elif defined(DISCREET_SRV_LED_INVERTED)
-    if (m_ledCount == 10000U) LED_pin(HIGH);
-    if (m_ledCount >= 480000U) {
-      m_ledCount = 0U;
-      LED_pin(LOW);
-    };
-#else
-    if (m_ledCount >= 24000U) {
-      m_ledCount = 0U;
-      m_ledValue = !m_ledValue;
-      LED_pin(m_ledValue);
-    }
-#endif
+    serviceLight();
   } else {
     if (m_ledCount >= 240000U) {
       m_ledCount = 0U;
@@ -189,9 +189,7 @@ void CIO::process()
     m_modeTimerCnt = 0U;
     if( (m_modemState == STATE_IDLE) && (m_scanPauseCnt == 0U) && m_scanEnable && !m_cwid_state && !m_pocsag_state) {
       m_scanPos = (m_scanPos + 1U) % m_TotalModes;
-      #if !defined(QUIET_MODE_LEDS)
-      setMode(m_Modes[m_scanPos]);
-      #endif
+      showScan(m_Modes[m_scanPos]);
       io.ifConf(m_Modes[m_scanPos], true);
     }
   }
@@ -407,58 +405,186 @@ uint8_t CIO::setFreq(uint32_t frequency_rx, uint32_t frequency_tx, uint8_t rf_po
 
 void CIO::setMode(MMDVM_STATE modemState)
 {
-#if defined(USE_ALTERNATE_POCSAG_LEDS)
-  if (modemState != STATE_POCSAG) {
+  m_shown     = modemState;
+  m_shownScan = false;
+  modeLights();
+}
+
+// The mode the scan listens for now: its light, unless the mode lights
+// stay dark while idle.
+void CIO::showScan(MMDVM_STATE modemState)
+{
+  m_shown     = modemState;
+  m_shownScan = true;
+  modeLights();
+}
+
+// WPSD: the lights' fields as this board's build sets them (Config.h), for
+// LIGHTS_BUILT: 1 the service light, 2 the mode lights while idle (1 =
+// dark), 5-7 the lights for NXDN, M17 and POCSAG.
+uint8_t CIO::lightsBuilt(uint8_t field) const
+{
+  switch (field) {
+    case 1U:
+#if defined(CONSTANT_SRV_LED) || defined(CONSTANT_SRV_LED_INVERTED)
+      return SRV_STEADY;
+#elif defined(DISCREET_SRV_LED) || defined(DISCREET_SRV_LED_INVERTED)
+      return SRV_BRIEF;
+#else
+      return SRV_BLINK;
 #endif
-    DSTAR_pin(modemState  == STATE_DSTAR);
-    DMR_pin(modemState    == STATE_DMR);
-#if defined(USE_ALTERNATE_POCSAG_LEDS)
-  }
+    case 2U:
+#if defined(QUIET_MODE_LEDS)
+      return 1U;
+#else
+      return 0U;
 #endif
+    case 5U:
 #if defined(USE_ALTERNATE_NXDN_LEDS)
-  if (modemState != STATE_NXDN) {
+      return PAIR_YSF_P25;
+#else
+      return PAIR_OWN;
 #endif
-    YSF_pin(modemState    == STATE_YSF);
-    P25_pin(modemState    == STATE_P25);
-#if defined(USE_ALTERNATE_NXDN_LEDS)
-  }
-#endif
+    case 6U:
 #if defined(USE_ALTERNATE_M17_LEDS)
-  if (modemState != STATE_M17) {
+      return PAIR_DSTAR_P25;
+#else
+      return PAIR_OWN;
 #endif
-    YSF_pin(modemState    == STATE_YSF);
-    P25_pin(modemState    == STATE_P25);
-#if defined(USE_ALTERNATE_M17_LEDS)
-  }
-#endif
-#if defined(USE_ALTERNATE_NXDN_LEDS)
-  if (modemState != STATE_YSF && modemState != STATE_P25) {
-#endif
-    NXDN_pin(modemState   == STATE_NXDN);
-#if defined(USE_ALTERNATE_NXDN_LEDS)
-  }
-#endif
+    case 7U:
 #if defined(USE_ALTERNATE_POCSAG_LEDS)
-  if (modemState != STATE_DSTAR && modemState != STATE_DMR) {
+      return PAIR_DSTAR_DMR;
+#else
+      return PAIR_OWN;
 #endif
-    POCSAG_pin(modemState == STATE_POCSAG);
-#if defined(USE_ALTERNATE_POCSAG_LEDS)
+    default:
+      return 0U;
   }
-#endif
-#if defined(USE_ALTERNATE_M17_LEDS)
-  if (modemState != STATE_DSTAR && modemState != STATE_P25) {
-#endif
-    M17_pin(modemState   == STATE_M17);
-#if defined(USE_ALTERNATE_M17_LEDS)
+}
+
+// MMDVM_SET_LIGHTS: eight bytes, or nine.
+//   0  1 = every light dark, whatever the rest says
+//   1  the service light: SRV_*
+//   2  the mode lights while idle: 0 = each as the scan listens for it, 1 = dark
+//   3  the mode lights during a call: 1 = on, 0 = dark
+//   4  the RX and TX lights: 1 = on, 0 = dark
+//   5  the lights for NXDN: PAIR_*
+//   6  the lights for M17: PAIR_*
+//   7  the lights for POCSAG: PAIR_*
+//   8  1 = the service light the other way round from the build (optional)
+// 1, 2 and 5-7 also take LIGHTS_BUILT. Applied at once.
+uint8_t CIO::setLights(const uint8_t* data, uint8_t length)
+{
+  if (length < 8U)
+    return 4U;
+  if (data[0U] > 1U || data[3U] > 1U || data[4U] > 1U)
+    return 4U;
+  if (data[1U] > SRV_OFF && data[1U] != LIGHTS_BUILT)
+    return 4U;
+  if (data[2U] > 1U && data[2U] != LIGHTS_BUILT)
+    return 4U;
+  for (uint8_t i = 5U; i < 8U; i++) {
+    if (data[i] > PAIR_DSTAR_DMR && data[i] != LIGHTS_BUILT)
+      return 4U;
   }
-#endif
+  // Some boards light the service light on the pin's other level.
+  if (length > 8U && data[8U] > 1U)
+    return 4U;
+
+  m_lightsOff  = data[0U] == 1U;
+  m_srvStyle   = data[1U] == LIGHTS_BUILT ? lightsBuilt(1U) : data[1U];
+  m_quietScan  = (data[2U] == LIGHTS_BUILT ? lightsBuilt(2U) : data[2U]) == 1U;
+  m_callLights = data[3U] == 1U;
+  m_rxtxLights = data[4U] == 1U;
+  for (uint8_t i = 0U; i < 3U; i++)
+    m_pair[i] = data[5U + i] == LIGHTS_BUILT ? lightsBuilt(5U + i) : data[5U + i];
+  m_srvInverted = m_srvBuiltInverted != (length > 8U && data[8U] == 1U);
+
+  // The service light shows the change at once: a brief blink starts its
+  // cycle lit (serviceLight puts it out after its moment).
+  m_ledCount = 0U;
+  if (m_srvStyle == SRV_BRIEF && !m_lightsOff)
+    LED_pin(!m_srvInverted);
+  serviceLight();
+  modeLights();
+  COS_pin(m_rxOn && m_rxtxLights && !m_lightsOff);
+  PTT_pin(m_txOn && m_rxtxLights && !m_lightsOff);
+
+  return 0U;
+}
+
+// The service light, called each tick: m_ledCount counts the ticks.
+void CIO::serviceLight()
+{
+  // The pin level that lights it.
+  const bool on = !m_srvInverted;
+
+  if (m_lightsOff || m_srvStyle == SRV_OFF) {
+    LED_pin(!on);
+  } else if (m_srvStyle == SRV_STEADY) {
+    LED_pin(on);
+  } else if (m_srvStyle == SRV_BRIEF) {
+    if (m_ledCount == 10000U)
+      LED_pin(!on);
+    if (m_ledCount >= 480000U) {
+      m_ledCount = 0U;
+      LED_pin(on);
+    }
+  } else if (m_ledCount >= 24000U) {
+    m_ledCount = 0U;
+    m_ledValue = !m_ledValue;
+    LED_pin(m_ledValue);
+  }
+}
+
+// The mode lights for m_shown. NXDN and M17 share one light on every
+// board; each pin is written once, so neither puts out the other's.
+void CIO::modeLights()
+{
+  bool dstar = false, dmr = false, ysf = false, p25 = false, nxdn = false, pocsag = false;
+
+  bool lit = !m_lightsOff && (m_shownScan ? !m_quietScan : m_callLights);
+  if (lit) {
+    uint8_t pair = 0xFFU;
+    switch (m_shown) {
+      case STATE_DSTAR:  dstar = true; break;
+      case STATE_DMR:    dmr = true; break;
+      case STATE_YSF:    ysf = true; break;
+      case STATE_P25:    p25 = true; break;
+      case STATE_NXDN:   pair = m_pair[0U]; if (pair == PAIR_OWN) nxdn = true; break;
+      case STATE_M17:    pair = m_pair[1U]; if (pair == PAIR_OWN) nxdn = true; break;
+      case STATE_POCSAG: pair = m_pair[2U]; if (pair == PAIR_OWN) pocsag = true; break;
+      default: break;
+    }
+    switch (pair) {
+      case PAIR_YSF_P25:   ysf = p25 = true; break;
+      case PAIR_DSTAR_P25: dstar = p25 = true; break;
+      case PAIR_DSTAR_DMR: dstar = dmr = true; break;
+      default: break;
+    }
+  }
+
+  DSTAR_pin(dstar);
+  DMR_pin(dmr);
+  YSF_pin(ysf);
+  P25_pin(p25);
+  NXDN_pin(nxdn);
+  POCSAG_pin(pocsag);
+}
+
+// The TX light (the PTT pin), as the transmitter goes on and off.
+void CIO::txLight(bool on)
+{
+  m_txOn = on;
+  PTT_pin(on && m_rxtxLights && !m_lightsOff);
 }
 
 void CIO::setDecode(bool dcd)
 {
   if (dcd != m_dcd) {
     m_scanPauseCnt = 1U;
-    COS_pin(dcd ? true : false);
+    m_rxOn = dcd;
+    COS_pin(dcd && m_rxtxLights && !m_lightsOff);
   }
 
   m_dcd = dcd;

@@ -25,8 +25,8 @@
 
 #define VER_MAJOR       "1"
 #define VER_MINOR       "6"
-#define VER_REV         "1"
-#define VERSION_DATE    "20230526"
+#define VER_REV         "2"
+#define VERSION_DATE    "20261122"
 
 #if defined(ZUMSPOT_ADF7021)
 #define BOARD_INFO      "ZUMspot"
@@ -73,7 +73,11 @@
 
 #define FW_VERSION      "v" VER_MAJOR "." VER_MINOR "." VER_REV " " VERSION_DATE
 
-#define DESCRIPTION     BOARD_INFO "-" FW_VERSION " " TCXO_FREQ "MHz " RF_DUAL RF_CHIP " FW by CA6JAU"
+// What this build can do beyond upstream MMDVM_HS, for the host to read:
+// "Lights" = it takes MMDVM_SET_LIGHTS (how the lights work, at any time).
+#define FEATURES        " Lights"
+
+#define DESCRIPTION     BOARD_INFO "-" FW_VERSION " " TCXO_FREQ "MHz " RF_DUAL RF_CHIP " FW by CA6JAU" FEATURES
 
 #if defined(MADEBYMAKEFILE)
 #include "GitVersion.h"
