@@ -25,8 +25,8 @@
 
 #define VER_MAJOR       "1"
 #define VER_MINOR       "6"
-#define VER_REV         "2"
-#define VERSION_DATE    "20261122"
+#define VER_REV         "3"
+#define VERSION_DATE    "20261125"
 
 #if defined(ZUMSPOT_ADF7021)
 #define BOARD_INFO      "ZUMspot"
@@ -75,7 +75,8 @@
 
 // What this build can do beyond upstream MMDVM_HS, for the host to read:
 // "Lights" = it takes MMDVM_SET_LIGHTS (how the lights work, at any time).
-#define FEATURES        " Lights"
+// "ModeOffsets" = it takes MMDVM_SET_OFFSETS (an RX and TX offset per mode).
+#define FEATURES        " Lights ModeOffsets"
 
 #define DESCRIPTION     BOARD_INFO "-" FW_VERSION " " TCXO_FREQ "MHz " RF_DUAL RF_CHIP " FW by CA6JAU" FEATURES
 

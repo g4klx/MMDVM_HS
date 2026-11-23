@@ -34,6 +34,8 @@ const uint8_t MMDVM_SET_FREQ     = 0x04U;
 
 // WPSD: how the lights work (see CIO::setLights).
 const uint8_t MMDVM_SET_LIGHTS   = 0x0FU;
+// WPSD: an RX and TX offset for each mode (see setOffsets).
+const uint8_t MMDVM_SET_OFFSETS  = 0x0EU;
 
 const uint8_t MMDVM_CAL_DATA     = 0x08U;
 const uint8_t MMDVM_RSSI_DATA    = 0x09U;
@@ -221,7 +223,7 @@ void CSerialPort::getStatus()
 
 void CSerialPort::getVersion()
 {
-  uint8_t reply[132U];
+  uint8_t reply[200U];
 
   reply[0U] = MMDVM_FRAME_START;
   reply[1U] = 0U;
@@ -514,6 +516,35 @@ void CSerialPort::resetReceivers()
   m17RX.reset();
 }
 
+// MMDVM_SET_OFFSETS: an RX and a TX offset in Hz for each mode, added to
+// SET_FREQ's frequencies while that mode is on, so a mode whose radios sit
+// a little off the others can be corrected on its own. Six pairs of signed
+// 16-bit little-endian numbers, RX then TX: D-Star, DMR, System Fusion,
+// P25, NXDN, M17. Each at most OFFSET_MAX from the frequency. Like
+// SET_FREQ, it takes effect when the radio is next set up (SET_CONFIG, a
+// mode change, the scan); all zeros is the same as never sent.
+uint8_t CSerialPort::setOffsets(const uint8_t* data, uint8_t length)
+{
+  const MMDVM_STATE modes[] = {STATE_DSTAR, STATE_DMR, STATE_YSF, STATE_P25, STATE_NXDN, STATE_M17};
+  const uint8_t n = sizeof(modes) / sizeof(modes[0]);
+
+  if (length < n * 4U)
+    return 4U;
+
+  int16_t rx[n], tx[n];
+  for (uint8_t i = 0U; i < n; i++) {
+    rx[i] = int16_t(uint16_t(data[i * 4U + 0U]) | (uint16_t(data[i * 4U + 1U]) << 8));
+    tx[i] = int16_t(uint16_t(data[i * 4U + 2U]) | (uint16_t(data[i * 4U + 3U]) << 8));
+    if (rx[i] > OFFSET_MAX || rx[i] < -OFFSET_MAX || tx[i] > OFFSET_MAX || tx[i] < -OFFSET_MAX)
+      return 4U;
+  }
+
+  for (uint8_t i = 0U; i < n; i++)
+    io.setOffsets(modes[i], rx[i], tx[i]);
+
+  return 0U;
+}
+
 void CSerialPort::setMode(MMDVM_STATE modemState)
 {
   switch (modemState) {
@@ -693,6 +724,14 @@ void CSerialPort::process()
 
           case MMDVM_SET_LIGHTS:
             err = io.setLights(m_buffer + 3U, m_len - 3U);
+            if (err == 0U)
+              sendACK();
+            else
+              sendNAK(err);
+            break;
+
+          case MMDVM_SET_OFFSETS:
+            err = setOffsets(m_buffer + 3U, m_len - 3U);
             if (err == 0U)
               sendACK();
             else

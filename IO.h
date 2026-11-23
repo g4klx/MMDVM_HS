@@ -78,6 +78,8 @@ const uint8_t PAIR_OWN         = 0U;  // its own (NXDN and M17 share one)
 const uint8_t PAIR_YSF_P25     = 1U;
 const uint8_t PAIR_DSTAR_P25   = 2U;
 const uint8_t PAIR_DSTAR_DMR   = 3U;
+// WPSD: per-mode offsets (MMDVM_SET_OFFSETS), Hz, at most this far.
+const int16_t OFFSET_MAX = 10000;
 extern uint8_t   m_power;
 
 class CIO {
@@ -131,6 +133,7 @@ public:
   bool      hasTXOverflow(void);
   bool      hasRXOverflow(void);
   uint8_t   setFreq(uint32_t frequency_rx, uint32_t frequency_tx, uint8_t rf_power, uint32_t pocsag_freq_tx);
+  void      setOffsets(MMDVM_STATE modemState, int16_t rx, int16_t tx);
   void      setPower(uint8_t power);
   void      setMode(MMDVM_STATE modemState);
   void      setDecode(bool dcd);
@@ -200,6 +203,8 @@ private:
   uint8_t            m_scanPos;
   uint8_t            m_TotalModes;
   MMDVM_STATE        m_Modes[6];
+  int16_t            m_rxOffset[STATE_M17 + 1];  // per mode, Hz (setOffsets)
+  int16_t            m_txOffset[STATE_M17 + 1];
   bool               m_ledValue;
 
   // WPSD: the lights (setLights), and what they would show now.
