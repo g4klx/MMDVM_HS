@@ -85,7 +85,7 @@ Enable RW filesystem if you are using Pi-Star:
 Install the necessary software tools:
 
     sudo apt-get update
-    sudo apt-get install gcc-arm-none-eabi gdb-arm-none-eabi libstdc++-arm-none-eabi-newlib libnewlib-arm-none-eabi
+    sudo apt-get install gcc-arm-none-eabi gdb-multiarch libstdc++-arm-none-eabi-newlib libnewlib-arm-none-eabi
     
     cd ~
     git clone https://git.code.sf.net/p/stm32flash/code stm32flash
@@ -276,7 +276,7 @@ Enable RW filesystem if you are using Pi-Star:
 Install the necessary software tools:
 
     sudo apt-get update
-    sudo apt-get install gcc-arm-none-eabi gdb-arm-none-eabi libstdc++-arm-none-eabi-newlib libnewlib-arm-none-eabi
+    sudo apt-get install gcc-arm-none-eabi gdb-multiarch libstdc++-arm-none-eabi-newlib libnewlib-arm-none-eabi
 
 Download the sources:
 
@@ -411,7 +411,7 @@ Enable RW filesystem if you are using Pi-Star:
 Install the necessary software tools:
 
     sudo apt-get update
-    sudo apt-get install gcc-arm-none-eabi gdb-arm-none-eabi libstdc++-arm-none-eabi-newlib libnewlib-arm-none-eabi
+    sudo apt-get install gcc-arm-none-eabi gdb-multiarch libstdc++-arm-none-eabi-newlib libnewlib-arm-none-eabi
 
 Download the sources:
 

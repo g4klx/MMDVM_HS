@@ -125,6 +125,11 @@ else
 				ST_FLASH_OPTS= 
 		  endif
 			STM32FLASH=./$(F1_LIB_PATH)/utils/linux64/stm32flash
+		else ifeq ($(shell uname -m),aarch64)
+            DFU_RST=./$(F1_LIB_PATH)/utils/rpi32/upload-reset
+            DFU_UTIL=./$(F1_LIB_PATH)/utils/rpi32/dfu-util
+            ST_FLASH=./$(F1_LIB_PATH)/utils/rpi32/st-flash
+            STM32FLASH=./$(F1_LIB_PATH)/utils/rpi32/stm32flash
 		else ifeq ($(shell uname -m),armv7l)
 			DFU_RST=./$(F1_LIB_PATH)/utils/rpi32/upload-reset
 			DFU_UTIL=./$(F1_LIB_PATH)/utils/rpi32/dfu-util
