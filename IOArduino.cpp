@@ -321,22 +321,12 @@ void CIO::P25_pin(bool on)
 
 void CIO::NXDN_pin(bool on) 
 {
-#if defined(USE_ALTERNATE_NXDN_LEDS)
-  digitalWrite(PIN_YSF_LED, on ? HIGH : LOW);
-  digitalWrite(PIN_P25_LED, on ? HIGH : LOW);
-#else
   digitalWrite(PIN_NXDN_LED, on ? HIGH : LOW);
-#endif
 }
 
 void CIO::POCSAG_pin(bool on)
 {
-#if defined(USE_ALTERNATE_POCSAG_LEDS)
-  digitalWrite(PIN_DSTAR_LED, on ? HIGH : LOW);
-  digitalWrite(PIN_DMR_LED, on ? HIGH : LOW);
-#else
   digitalWrite(PIN_POCSAG_LED, on ? HIGH : LOW);
-#endif
 }
 
 void CIO::PTT_pin(bool on) 

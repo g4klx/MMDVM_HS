@@ -64,6 +64,20 @@
 extern uint32_t  m_frequency_rx;
 extern uint32_t  m_frequency_tx;
 extern uint32_t  m_pocsag_freq_tx;
+
+// WPSD: how the lights work (MMDVM_SET_LIGHTS). LIGHTS_BUILT, in any
+// field that takes it, keeps what this board's build chose.
+const uint8_t LIGHTS_BUILT     = 0xFFU;
+// The service light.
+const uint8_t SRV_BLINK        = 0U;  // about once a second
+const uint8_t SRV_BRIEF        = 1U;  // a short blink every 20 seconds or so
+const uint8_t SRV_STEADY       = 2U;
+const uint8_t SRV_OFF          = 3U;
+// Which lights show NXDN, M17 or POCSAG.
+const uint8_t PAIR_OWN         = 0U;  // its own (NXDN and M17 share one)
+const uint8_t PAIR_YSF_P25     = 1U;
+const uint8_t PAIR_DSTAR_P25   = 2U;
+const uint8_t PAIR_DSTAR_DMR   = 3U;
 extern uint8_t   m_power;
 
 class CIO {
@@ -120,6 +134,8 @@ public:
   void      setPower(uint8_t power);
   void      setMode(MMDVM_STATE modemState);
   void      setDecode(bool dcd);
+  void      showScan(MMDVM_STATE modemState);
+  uint8_t   setLights(const uint8_t* data, uint8_t length);
   void      setLoDevYSF(bool ysfLoDev);
   void      resetWatchdog(void);
   uint32_t  getWatchdog(void);
@@ -185,6 +201,25 @@ private:
   uint8_t            m_TotalModes;
   MMDVM_STATE        m_Modes[6];
   bool               m_ledValue;
+
+  // WPSD: the lights (setLights), and what they would show now.
+  bool               m_lightsOff;    // every light dark
+  uint8_t            m_srvStyle;     // SRV_*
+  bool               m_srvInverted;  // the board's service light is on when its pin is low
+  bool               m_srvBuiltInverted; // so its build says (SRV_LED_INVERTED)
+  bool               m_quietScan;    // mode lights dark while idle
+  bool               m_callLights;   // mode lights during a call
+  bool               m_rxtxLights;   // the RX (COS) and TX (PTT) lights
+  uint8_t            m_pair[3];      // NXDN, M17, POCSAG: PAIR_*
+  MMDVM_STATE        m_shown;        // the mode the mode lights are for
+  bool               m_shownScan;    // ... while scanning, not in a call
+  bool               m_rxOn;
+  bool               m_txOn;
+
+  uint8_t   lightsBuilt(uint8_t field) const;
+  void      txLight(bool on);
+  void      modeLights(void);
+  void      serviceLight(void);
   volatile uint32_t  m_watchdog;
   volatile uint16_t  m_int1counter;
   volatile uint16_t  m_int2counter;

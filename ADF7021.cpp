@@ -963,7 +963,7 @@ void CIO::interrupt2()
 void CIO::setTX()
 {
   // PTT pin on (doing it earlier helps to measure timing impact)
-  PTT_pin(HIGH);
+  txLight(true);
 
   // Send register 0 for TX operation, but do not activate yet.
   // This is done in the interrupt at the correct time
@@ -981,7 +981,7 @@ void CIO::setTX()
 void CIO::setRX(bool doSle)
 {
   // PTT pin off (doing it earlier helps to measure timing impact)
-  PTT_pin(LOW);
+  txLight(false);
 
   // Send register 0 for RX operation, but do not activate yet.
   // This is done in the interrupt at the correct time
