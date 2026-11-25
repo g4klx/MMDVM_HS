@@ -387,6 +387,13 @@ uint8_t CSerialPort::setConfig(const uint8_t* data, uint8_t length)
       io.ifConf(STATE_M17, true);
     else if(m_pocsagEnable)
       io.ifConf(STATE_POCSAG, true);
+
+    // The set-up resets the radio chip and calibrates its IF filter, which
+    // cuts off whatever is being received. Every receiver starts again and
+    // finds the next sync; one left mid-transmission would read the rest
+    // out of step (D-Star for up to 100 frames, two seconds of bad data).
+    // MMDVMCal sends a config at every frequency step.
+    resetReceivers();
   }
 
   io.start();
@@ -488,6 +495,20 @@ uint8_t CSerialPort::setFreq(const uint8_t* data, uint8_t length)
   }
 
   return io.setFreq(freq_rx, freq_tx, rf_power, pocsag_freq_tx);
+}
+
+void CSerialPort::resetReceivers()
+{
+  dstarRX.reset();
+#if defined(DUPLEX)
+  dmrIdleRX.reset();
+  dmrRX.reset();
+#endif
+  dmrDMORX.reset();
+  ysfRX.reset();
+  p25RX.reset();
+  nxdnRX.reset();
+  m17RX.reset();
 }
 
 void CSerialPort::setMode(MMDVM_STATE modemState)
