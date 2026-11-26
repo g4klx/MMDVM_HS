@@ -205,12 +205,21 @@ void CIO::ifConf(MMDVM_STATE modemState, bool reset)
   if (modemState != STATE_CWID && modemState != STATE_POCSAG)
     m_modemState_prev = modemState;
 
-  // Change frequency for POCSAG mode, store a backup of DV frequencies
+  // Change frequency for POCSAG mode, or move a DV mode by its own offsets
+  // (MMDVM_SET_OFFSETS); store a backup of DV frequencies
+  bool shifted = false;
   if (modemState == STATE_POCSAG) {
     frequency_tx_tmp = m_frequency_tx;
     frequency_rx_tmp = m_frequency_rx;
     m_frequency_tx   = m_pocsag_freq_tx;
     m_frequency_rx   = m_pocsag_freq_tx;
+    shifted = true;
+  } else if (modemState > STATE_IDLE && modemState <= STATE_M17 && (m_rxOffset[modemState] != 0 || m_txOffset[modemState] != 0)) {
+    frequency_tx_tmp = m_frequency_tx;
+    frequency_rx_tmp = m_frequency_rx;
+    m_frequency_rx   = uint32_t(int32_t(m_frequency_rx) + m_rxOffset[modemState]);
+    m_frequency_tx   = uint32_t(int32_t(m_frequency_tx) + m_txOffset[modemState]);
+    shifted = true;
   }
 
   #if defined (ZUMSPOT_ADF7021) || defined(SKYBRIDGE_HS)
@@ -608,7 +617,7 @@ void CIO::ifConf(MMDVM_STATE modemState, bool reset)
   Send_AD7021_control();
 
   // Restore normal DV frequencies
-  if (modemState == STATE_POCSAG) {
+  if (shifted) {
     m_frequency_tx = frequency_tx_tmp;
     m_frequency_rx = frequency_rx_tmp;
   }
